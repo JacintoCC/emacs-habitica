@@ -154,6 +154,7 @@
     (define-key map "a"         #'habitica-add-tag-to-task)
     (define-key map "A"         #'habitica-remove-tag-from-task)
     (define-key map "c"         #'habitica-score-checklist-item)
+    (define-key map "p"         #'habitica-buy-potion)
     map)
   "Keymap of habitica interactive commands.")
 
@@ -185,6 +186,7 @@
      ["Set difficulty for task" habitica-set-difficulty]
      "---"
      ["Buy reward" habitica-buy-reward]
+     ["Buy potion" habitica-buy-potion]
      "---"
      ["Create a new tag" habitica-create-tag]
      ["Add a tag to task" habitica-add-tag-to-task]
@@ -770,6 +772,12 @@ TEXT is the checklist item new name."
   (kill-region (line-beginning-position) (+ 1 (line-end-position)))
   (org-update-checkbox-count))
 
+;; Function to buy a potion
+(defun habitica-buy-potion ()
+  "Buy a potion."
+  (interactive)
+  (habitica--send-request "/user/buy-health-potion" "POST" "")
+  (message "Bought potion"))
 
 (defun habitica-login (username)
   "Login and retrives the user id and api token.
