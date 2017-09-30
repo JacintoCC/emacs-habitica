@@ -408,6 +408,10 @@ DIRECTION is up or down, if the task is a habit."
   "Get the user's raw profile data."
   (habitica--send-request "/user" "GET" ""))
 
+(defun habitica--get-party ()
+  "Get the user's raw party data."
+  (habitica--send-request "/groups/party" "GET" ""))
+
 (defun habitica--set-profile-tag (class tag)
   "Set a tag in the for a profile class.
 
@@ -502,6 +506,28 @@ SHOW-NOTIFICATION, if true, it will add notification tags."
     (insert (concat "** Silver : " (format "%d" habitica-silver) "\n"))
     (if show-notification
         (habitica--show-notifications current-level old-level current-exp old-exp to-next-level))))
+
+(defun habitica--parse-profile-party (party)
+  "Formats the party user stats as a header
+
+PARTY is the JSON party data"
+  (let ((current-quest (assoc-default 'quest party)))
+    (insert
+     (concat "** Current Day Progress: "
+             (format "%s" (assoc-default 'up (assoc-default 'progress current-quest))) "\n")
+     )
+    )
+  )
+
+(defun habitica--parse-party (party)
+  (let ((current-quest (assoc-default 'quest party)))
+    (insert "* Party\n")
+    (insert (concat "** Name : " (assoc-default 'name party) "\n"))
+    (insert (concat "** Quest : " (assoc-default 'key current-quest) "\n"))
+    (insert (concat "*** Progress : "
+                    (format "%d" (assoc-default 'hp (assoc-default 'progress current-quest))) "\n"))
+    )
+  )
 
 (defun habitica--refresh-profile ()
   "Kill the current profile and parse a new one."
@@ -777,6 +803,7 @@ TEXT is the checklist item new name."
   "Buy a potion."
   (interactive)
   (habitica--send-request "/user/buy-health-potion" "POST" "")
+  (habitica-tasks)
   (message "Bought potion"))
 
 (defun habitica-login (username)
@@ -816,7 +843,8 @@ USERNAME is the user's username."
   (insert "#+TITLE: Habitica Dashboard\n\n")
   (habitica--get-tags)
   (let ((habitica-data (habitica--get-tasks))
-        (habitica-profile (habitica--get-profile)))
+        (habitica-profile (habitica--get-profile))
+        (habitica-party (habitica--get-party)))
     (habitica--parse-profile (assoc-default 'stats habitica-profile) nil)
     (let ((tasksOrder (assoc-default 'tasksOrder habitica-profile)))
       (insert "* Habits :habit:\n")
